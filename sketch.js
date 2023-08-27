@@ -46,14 +46,19 @@ function setup() {
     pillars.push(pillar)
   }
 
-  for (let i = 1; i <= 18; i++){
+  for (let i = 1; i <= 20; i++){
     for (let j = 1; j <= i + 30 ; j++){
-      
+      /*
+      let pin = new Ball(world,
+        { x: - i * 12.5 + j * 25, y: 100 + i * 25 * 0.866, r:2, color: 'white' },
+        { isStatic: true, angle: PI/4}
+        )
+        */
       let pin = new Block(world,
-        { x: - i * 12.5 + j * 25, y: 100 + i * 25 * 0.866, w:2, h:6, color: 'white' },
+        { x: - i * 12.5 + j * 25, y: 100 + i * 25 * 0.866, w:6, h:6, color: 'white' },
         //{ x:j * 25, y: 100 + i * 25 * 0.866, r:2, color: 'white' },
-        //{ isStatic: true, angle: PI/4 + (j - 15) * 0.1}
-        {isStatic: true, angle: PI/ 2 + (j - 15) * 0.1}
+        { isStatic: true, angle: PI/4}
+        //{isStatic: true, angle: PI/ 2 + (j - 15) * 0.1}
         )
       pins.push(pin);
     }
