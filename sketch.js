@@ -13,7 +13,7 @@ let ballparams = {friction: 0, restitution: 0.2, density: 0.00001, slop:0, sleep
 
 function setupGui() {
   effectController = {
-		vgap: 0.886
+		vgap: 0.75
   };
 	var h;
   var gui = new dat.GUI();
@@ -39,6 +39,11 @@ function func(i, j){
     h: h, 
     rot: rot,
   }
+}
+
+function clearBalls(){
+  Matter.Composite.clear(world, keepStatic=true)
+  balls = []
 }
 
 
