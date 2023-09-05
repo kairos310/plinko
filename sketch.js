@@ -6,24 +6,38 @@ let pillars = [];
 let ground;
 let world;
 let effectController;
+let distribution = new Array(33).fill(0);
 
 const spacing = 25;
 
-let ballparams = {friction: 0, restitution: 0.2, density: 0.00001, slop:0, sleepThreshold: 2, frictionAir: 0.0} 
+let ballfilter = {
+  'group': -1,
+  'category': 2,
+  'mask': 1,
+}
+
+
+let ballparams = {friction: 0, restitution: 0.2, density: 0.00001, slop:0, sleepThreshold: 2, frictionAir: 0.0, collisionFilter: ballfilter, label: "ball"} 
 
 function setupGui() {
   effectController = {
-		vgap: 0.75
+		vgap: 0.75,
+    bounce: 0.2
   };
 	var h;
   var gui = new dat.GUI();
 
-	//adjust base width of tree
+	//adjust height
   gui.add(effectController, "vgap").name("Vertical Gap").min(0.25).max(1).step(0.001).onFinishChange(()=>{
 		vgap = effectController.vgap;
 		movePins();
 	});
+  gui.add(effectController, "bounce").name("Bounce").min(0).max(1).step(0.001).onFinishChange(()=>{
+		ballparams.restitution = effectController.bounce
+	});
 }
+
+
 function func(i, j){
   var dx, dy, rot, w, h;
   x = 37.5 - i * spacing/2 + j * spacing, 
@@ -44,6 +58,8 @@ function func(i, j){
 function clearBalls(){
   Matter.Composite.clear(world, keepStatic=true)
   balls = []
+  
+  distribution = new Array(33).fill(0);
 }
 
 
@@ -54,7 +70,33 @@ function setup() {
 
   // create an engine
   const engine = Matter.Engine.create();
+  
   world = engine.world;
+  
+  
+  Matter.Events.on(engine, 'collisionStart', ({pairs}) => {
+    pairs.forEach(({bodyA, bodyB}) => {
+      if (bodyA.label == "ground"){
+        Matter.World.remove(world, bodyB);
+        balls.forEach((ball, index) => {
+          if(ball.body == bodyB){
+            distribution[Math.floor(bodyB.position.x / 25)] += 1 
+            balls.splice(index, 1)
+          }
+        });
+      }
+      if (bodyB.label == "ground"){
+        Matter.World.remove(world, bodyA);
+        balls.forEach((ball, index) => {
+          if(ball.body == bodyA){
+            distribution[Math.floor(bodyA.position.x / 25)] += 1
+            balls.splice(index, 1)
+          }
+        });
+      }
+    });
+  });
+
   setupGui()
   // config wrap area
   const wrap = {
@@ -63,9 +105,9 @@ function setup() {
   };
 
   // create balls
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 400; i++) {
     let newBall = new Ball(world,
-      { x: 400, y: 50 - i * 5, r: 5, color: 'white' },
+      { x: 400 + i / 400 * spacing - 1/2 * spacing, y: 50, r: 5, color: 'grey' },
       ballparams
     );
     balls.push(newBall);
@@ -74,10 +116,10 @@ function setup() {
   // static line
   ground = new Block(world,
     { x: 400, y: 800, w: 800, h: 50, color: 'grey' },
-    { isStatic: true }
+    { isStatic: true , label: "ground"}
   );
   
-  for ( let i = 0; i < 60; i ++){
+  for ( let i = 0; i < 32; i ++){
     let pillar = new Block(world,
       { x: i * 25, y: 690, w: 2, h: 200, color: 'white'},
       {isStatic: true}
@@ -88,12 +130,12 @@ function setup() {
   for (let i = 0; i < 20; i++){
     pins.push([])
     for (let j = 0; j < i + 30 ; j++){
-      /*
+      var config = func(i, j);
       let pin = new Ball(world,
-        { x: - i * 12.5 + j * 25, y: 100 + i * 25 * 0.866, r:2, color: 'white' },
-        { isStatic: true, angle: PI/4}
+        {x: config.x, y: config.y, r: config.w /2, color: 'white'},
+        { isStatic: true}
         )
-        */
+        
        /*
       let pin = new Block(world,
         { x: - i * 12.5 + j * 25, y: 100 + i * 25 * 0.866, w:6, h:6, color: 'white' },
@@ -102,6 +144,7 @@ function setup() {
         //{isStatic: true, angle: PI/ 2 + (j - 15) * 0.1}
         )
         */
+       /*
       var config = func(i, j)
       let pin = new Block(world,
         { x: config.x, y: config.y, w: config.w, h: config.h, color: 'white'},
@@ -138,6 +181,16 @@ function movePins(){
   }
 }
 
+function graph(){
+  let prev = 0;
+  let max = Math.max(...distribution);
+  distribution.forEach((val, i) => {
+    stroke(255,0,0)
+    line(i * 25, 800 - prev/ max * 500, (i + 1) * 25, 800 - val/ max * 500)
+    prev = val;
+  });
+}
+
 function draw() {
   background(0);
 
@@ -157,15 +210,17 @@ function draw() {
     p.draw();
   }
 
-  
+  graph()
 
   mouse.draw();
 }
 
 function mousePressed(){
-  newBall = new Ball(world,
-    { x: random(395, 405), y: 50, r: 5, color: 'white' },
-    ballparams
-  );
-  balls.push(newBall);
+  for (let i = 0; i < 100; i++) {
+    let newBall = new Ball(world,
+      { x: 400 + i / 100 * spacing - 1/2 * spacing, y: 50, r: 5, color: 'grey' },
+      ballparams
+    );
+    balls.push(newBall);
+  }
 }
