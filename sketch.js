@@ -8,7 +8,7 @@ let world;
 let effectController;
 let distribution = new Array(33).fill(0);
 
-const spacing = 25;
+let spacing = 25;
 
 let ballfilter = {
   'group': -1,
@@ -22,6 +22,7 @@ let ballparams = {friction: 0, restitution: 0.2, density: 0.00001, slop:0, sleep
 function setupGui() {
   effectController = {
 		vgap: 0.75,
+    hgap: 25,
     bounce: 0.2
   };
 	var h;
@@ -35,15 +36,21 @@ function setupGui() {
   gui.add(effectController, "bounce").name("Bounce").min(0).max(1).step(0.001).onFinishChange(()=>{
 		ballparams.restitution = effectController.bounce
 	});
+  
+  gui.add(effectController, "hgap").name("Horizontal Gap").min(20).max(40).step(1).onFinishChange(()=>{
+		spacing = effectController.hgap
+		movePins();
+	});
 }
 
 
 function func(i, j){
+  j = j - 15
   var dx, dy, rot, w, h;
-  x = 37.5 - i * spacing/2 + j * spacing, 
-  y = 100 + i * 25 * effectController.vgap, 
-  w = 8 
-  h = 8
+  x = 400 + spacing / 2 - i * spacing/2 + j * spacing, 
+  y = 100 + i * spacing * effectController.vgap, 
+  w = 10
+  h = 10
   rot = PI/4;
 
   return {
@@ -59,7 +66,7 @@ function clearBalls(){
   Matter.Composite.clear(world, keepStatic=true)
   balls = []
   
-  distribution = new Array(33).fill(0);
+  distribution = new Array(Math.floor(800 / spacing) + 1).fill(0);
 }
 
 
@@ -80,7 +87,7 @@ function setup() {
         Matter.World.remove(world, bodyB);
         balls.forEach((ball, index) => {
           if(ball.body == bodyB){
-            distribution[Math.floor(bodyB.position.x / 25)] += 1 
+            distribution[Math.floor(bodyB.position.x / spacing)] += 1 
             balls.splice(index, 1)
           }
         });
@@ -89,7 +96,7 @@ function setup() {
         Matter.World.remove(world, bodyA);
         balls.forEach((ball, index) => {
           if(ball.body == bodyA){
-            distribution[Math.floor(bodyA.position.x / 25)] += 1
+            distribution[Math.floor(bodyA.position.x / spacing)] += 1
             balls.splice(index, 1)
           }
         });
@@ -118,7 +125,7 @@ function setup() {
     { x: 400, y: 800, w: 800, h: 50, color: 'grey' },
     { isStatic: true , label: "ground"}
   );
-  
+  /*
   for ( let i = 0; i < 32; i ++){
     let pillar = new Block(world,
       { x: i * 25, y: 690, w: 2, h: 200, color: 'white'},
@@ -126,7 +133,7 @@ function setup() {
     )
     pillars.push(pillar)
   }
-  
+  */
   for (let i = 0; i < 20; i++){
     pins.push([])
     for (let j = 0; j < i + 30 ; j++){
@@ -182,11 +189,11 @@ function movePins(){
 }
 
 function graph(){
-  let prev = 0;
+  let prev = distribution[0];
   let max = Math.max(...distribution);
   distribution.forEach((val, i) => {
     stroke(255,0,0)
-    line(i * 25, 800 - prev/ max * 500, (i + 1) * 25, 800 - val/ max * 500)
+    line(i * spacing, 800 - prev/ max * 500, (i + 1) * spacing, 800 - val/ max * 500)
     prev = val;
   });
 }
@@ -218,7 +225,7 @@ function draw() {
 function mousePressed(){
   for (let i = 0; i < 100; i++) {
     let newBall = new Ball(world,
-      { x: 400 + i / 100 * spacing - 1/2 * spacing, y: 50, r: 5, color: 'grey' },
+      { x: 400 + 1/2 * random(-spacing, spacing), y: 50, r: 5, color: 'grey' },
       ballparams
     );
     balls.push(newBall);
