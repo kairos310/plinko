@@ -7,7 +7,7 @@ let ground;
 let world;
 let gui;
 let effectController;
-
+let best = {'loss': 1, 'row': 15, 'col': 15, 'size': 1};
 let spacing = 25;
 let graphspacing = 8;
 
@@ -117,7 +117,7 @@ function setupGui() {
   gui = new dat.GUI();
 
 	//adjust height
-  gui.add(effectController, "vgap").name("Vertical Gap").min(15).max(30).step(1).onFinishChange(()=>{
+  gui.add(effectController, "vgap").name("Vertical Gap").min(15).max(30).step(0.1).onFinishChange(()=>{
 		vgap = effectController.vgap;
 		movePins();
     moveGround();
@@ -126,7 +126,7 @@ function setupGui() {
 		ballparams.restitution = effectController.bounce
 	});
   
-  gui.add(effectController, "hgap").name("Horizontal Gap").min(15).max(30).step(1).onFinishChange(()=>{
+  gui.add(effectController, "hgap").name("Horizontal Gap").min(15).max(30).step(0.1).onFinishChange(()=>{
 		spacing = effectController.hgap
 		movePins();
 	});
@@ -303,7 +303,7 @@ function graph(){
   let stddev = balltotal.stddev()
   line(mean * 8 - stddev * 8, 500, mean * 8 +  stddev * 8, 500)
 
-  document.getElementById("stddev").innerText = distribution.stddev() + " \n " + distribution.variance() + "\nStandard Deviation:" + stddev + "\nLoss: " + (28.86 - stddev)*(28.86 - stddev)/(28.86 * 28.86);
+  document.getElementById("stddev").innerText = distribution.stddev() + " \n " + distribution.variance() + "\nStandard Deviation:" + stddev + "\nLoss: " + (28.86 - stddev)*(28.86 - stddev)/(28.86 * 28.86) + "\n Best: \nCol: " + best.col + "\nRow: " + best.row + "\n Size:  " + best.size;
 }
 
 function draw() {
@@ -392,6 +392,12 @@ const run_sim = async function (input) {
   let stddev = balltotal.stddev()
   let loss = (28.86 - stddev)*(28.86 - stddev)/(28.86 * 28.86);
   losses.push(loss)
+  if(loss < best.loss){
+    best.loss = loss;
+    best.row = row;
+    best.col = col;
+    best.size = size;
+  }
   return loss;
 };
 
