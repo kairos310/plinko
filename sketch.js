@@ -5,6 +5,7 @@ let pins = [];
 let pillars = [];
 let ground;
 let world;
+let gui;
 let effectController;
 
 let spacing = 25;
@@ -113,10 +114,10 @@ function setupGui() {
     pegsize: 1
   };
 	var h;
-  var gui = new dat.GUI();
+  gui = new dat.GUI();
 
 	//adjust height
-  gui.add(effectController, "vgap").name("Vertical Gap").min(10).max(40).step(1).onFinishChange(()=>{
+  gui.add(effectController, "vgap").name("Vertical Gap").min(15).max(30).step(1).onFinishChange(()=>{
 		vgap = effectController.vgap;
 		movePins();
     moveGround();
@@ -125,7 +126,7 @@ function setupGui() {
 		ballparams.restitution = effectController.bounce
 	});
   
-  gui.add(effectController, "hgap").name("Horizontal Gap").min(20).max(40).step(1).onFinishChange(()=>{
+  gui.add(effectController, "hgap").name("Horizontal Gap").min(15).max(30).step(1).onFinishChange(()=>{
 		spacing = effectController.hgap
 		movePins();
 	});
@@ -288,7 +289,14 @@ function graph(){
     line(i * graphspacing, 800 - prev/ max * 500, (i + 1) * graphspacing, 800 - val/ max * 500)
     prev = val;
   });
-  
+  let step = 800 / losses.length
+  let temp = 1;
+  losses.forEach((val, i)=>{
+    stroke(0,255,255);
+    val = isNaN(val) ? 1 : val; 
+    line(i * step, 800 - 300 * temp, step * (i + 1), 800 - 300 * val)
+    temp = val;
+  })
   let mean = balltotal.mean(); 
   stroke(255,100,255)
   line(mean * 8, 450, mean * 8, 550)
@@ -367,9 +375,12 @@ const run_sim = async function (input) {
   size = input[2] * 1.2 + 0.2
   effectController.vgap = row
   vgap = effectController.vgap;
+  gui.__controllers[0].setValue(row);
   effectController.hgap = col
   spacing = effectController.hgap
+  gui.__controllers[2].setValue(col);
   effectController.pegsize = size;
+  gui.__controllers[4].setValue(size);
   movePins();
   moveGround();
   
