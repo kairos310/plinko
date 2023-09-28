@@ -20,7 +20,13 @@
   <button onclick="clearBalls()">Reset Graph</button>
   <button onclick="sim_anneal(200)">Optimize</button>
   <button onclick="console.log(losses)">Log losses</button>
-  cyan line indicates training loss
+  <br> green line indicates distribution
+  <br> magenta line indicates mean and standard deviation
+  <br> cyan line indicates training loss
+  <br> loss calculated using mean squared error from 28.86, this is the standard deviation where every bin has exactly the same number of balls
+  <br> close distributions are punished, so are those that leave a gap in the middle
+  <br> ball size is 1cm diameter, which is 4 pixels
+  <br> to convert to real world size, divide everything by 4 to get the value in cm
   <p id="stddev"></p>
 </body>
 </html>

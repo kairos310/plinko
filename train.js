@@ -250,6 +250,7 @@ async function sim_anneal(epochs){
             else{
               if(iteration_counter % NO_OF_ITERATION == 0){
                 temperature = temperature / TEMP_REDUCTION_FACTOR
+                
               }
             }
           }
